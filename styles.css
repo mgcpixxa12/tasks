@@ -441,3 +441,202 @@ body.planner-workspace.nav-docked-top .app-shell{padding-top:76px}
 #trackedTab>.tracked-group.open .tracked-group-body{width:100%}
 @media(max-width:1050px){#trackedTab.tab-panel.active{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){#trackedTab.tab-panel.active{grid-template-columns:1fr}.unfinished-location-board{grid-template-columns:1fr}}
+
+/* 2026-08-10 mobile planner/calendar layout */
+@media (max-width:760px){
+  html,body{max-width:100%;overflow-x:hidden}
+  body.planner-workspace .app-shell,
+  body.calendar-workspace .app-shell,
+  body.calendar-workspace.nav-docked-left .app-shell,
+  body.calendar-workspace.nav-docked-right .app-shell,
+  body.calendar-workspace.nav-docked-top .app-shell{
+    width:100%!important;
+    max-width:100%!important;
+    padding:8px!important;
+    padding-top:8px!important;
+  }
+
+  .topbar{gap:9px;margin-bottom:8px}
+  .topbar h1{font-size:24px;margin:0}
+  .top-actions{
+    width:100%;
+    display:flex;
+    flex-wrap:nowrap!important;
+    gap:6px;
+    overflow-x:auto;
+    padding:2px 0 6px;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .top-actions::-webkit-scrollbar{display:none}
+  .top-actions>*{flex:0 0 auto}
+  .top-actions .ghost-btn{padding:8px 10px;font-size:12px;white-space:nowrap}
+
+  .planner,
+  .planner.calendar-mode,
+  .planner.floating-nav-mode{display:block!important;width:100%!important;min-width:0!important}
+
+  /* Mobile nav lives in the document flow. Desktop floating/docked state is ignored. */
+  .planner .tabs,
+  .planner.calendar-mode .tabs,
+  .planner.floating-nav-mode .tabs,
+  .planner.calendar-mode .tabs.dock-left,
+  .planner.calendar-mode .tabs.dock-right,
+  .planner.calendar-mode .tabs.dock-top,
+  .planner.floating-nav-mode .tabs.dock-left,
+  .planner.floating-nav-mode .tabs.dock-right,
+  .planner.floating-nav-mode .tabs.dock-top{
+    position:sticky!important;
+    top:0!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    z-index:45;
+    width:calc(100% + 16px)!important;
+    height:auto!important;
+    margin:0 -8px 10px!important;
+    padding:7px 8px!important;
+    border-radius:0!important;
+    border-left:0!important;
+    border-right:0!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    gap:6px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    background:rgba(255,255,255,.97)!important;
+    box-shadow:0 5px 14px rgba(15,23,42,.10)!important;
+    backdrop-filter:blur(12px);
+    touch-action:pan-x!important;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .planner .tabs::-webkit-scrollbar{display:none}
+  .planner .floating-nav-head,
+  .planner .tabs .nav-drag-handle,
+  .planner .tabs .nav-collapse-btn,
+  .planner .tabs .nav-undock-btn{display:none!important}
+  .planner .tabs .nav-location-filter,
+  .planner.floating-nav-mode .tabs.dock-top .nav-location-filter{
+    display:flex!important;
+    flex:0 0 148px!important;
+    min-width:148px!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    gap:4px!important;
+  }
+  .planner .tabs .nav-location-filter>span{display:none}
+  .planner .tabs .nav-location-filter select{height:36px;padding:7px 8px;font-size:12px}
+  .planner .tabs .tab,
+  .planner.calendar-mode .tab,
+  .planner.floating-nav-mode .tab{
+    display:block!important;
+    flex:0 0 auto!important;
+    width:auto!important;
+    padding:9px 11px!important;
+    border-radius:10px!important;
+    font-size:12px!important;
+    line-height:1.1!important;
+    white-space:nowrap!important;
+  }
+
+  .section-card,
+  .planner.calendar-mode .section-card{padding:11px!important;margin-bottom:10px!important;border-radius:14px!important}
+  .planner.calendar-mode #calendarTab{font-size:14px!important;min-width:0}
+  .planner.calendar-mode #calendarTab h2{font-size:22px!important;margin:0 0 10px!important}
+  .planner.calendar-mode #calendarTab h3{font-size:17px!important;margin:0!important}
+
+  .calendar-controls{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:8px!important;
+    align-items:end!important;
+  }
+  .calendar-controls .field{min-width:0}
+  .calendar-controls .field input{width:100%;min-width:0}
+  .calendar-controls>#saveMonday{height:40px;padding:8px 12px}
+  .calendar-controls .check-chip{justify-content:center;padding:8px 10px;font-size:12px}
+
+  #calendarTab .section-head{align-items:center;gap:8px;margin-bottom:10px}
+  #calendarTab .section-head .button-row{display:flex;flex-wrap:nowrap;gap:5px;overflow-x:auto;max-width:58%;padding-bottom:2px;scrollbar-width:none}
+  #calendarTab .section-head .button-row::-webkit-scrollbar{display:none}
+  #calendarTab .section-head .mini-btn{flex:0 0 auto;padding:6px 8px;font-size:10px}
+
+  .calendar-grid,
+  .planner.calendar-mode .calendar-grid{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:10px!important;
+    width:100%!important;
+    overflow:visible!important;
+  }
+  .calendar-grid>*{min-width:0!important}
+  .day-card,
+  .planner.calendar-mode .day-card{
+    width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    padding:12px!important;
+    border-radius:14px!important;
+    overflow:visible!important;
+    contain:none!important;
+    font-size:14px!important;
+  }
+  .day-title,
+  .planner.calendar-mode .day-title{font-size:17px!important;margin-bottom:7px!important;align-items:center}
+  .day-title .task-sub{font-size:12px!important}
+  .day-copy-btn{font-size:11px!important;padding:5px 8px!important}
+  .day-total,
+  .planner.calendar-mode .day-total{font-size:12px!important;margin-bottom:8px!important}
+  .day-setup,
+  .planner.calendar-mode .day-setup{grid-template-columns:minmax(0,1fr) 104px!important;gap:7px!important}
+  .day-card select,
+  .day-card input[type=time],
+  .day-card input[type=number],
+  .planner.calendar-mode .day-card select,
+  .planner.calendar-mode .day-card input[type=time],
+  .planner.calendar-mode .day-card input[type=number]{font-size:14px!important;padding:9px 10px!important;min-height:40px}
+
+  .assignment-row,
+  .planner.calendar-mode .assignment-row{grid-template-columns:64px minmax(0,1fr)!important;gap:7px!important;margin-top:7px}
+  .assignment-time,
+  .planner.calendar-mode .assignment-time{font-size:11px!important;padding-top:11px!important;text-align:right!important}
+  .assignment,
+  .planner.calendar-mode .assignment{padding:9px!important;gap:7px!important;border-radius:11px!important}
+  .assignment-name,
+  .planner.calendar-mode .assignment-name{font-size:14px!important;line-height:1.2!important}
+  .assignment-meta,
+  .planner.calendar-mode .assignment-meta{font-size:11px!important}
+  .calendar-subtask-status{font-size:10px!important;padding:3px 7px!important}
+  .calendar-subtask-checks label{font-size:12px!important;padding:3px 0}
+  .calendar-drag-handle{font-size:14px!important;padding:3px!important}
+  .icon-btn{font-size:20px!important;padding:0 3px!important}
+
+  .current-location,
+  .planner.calendar-mode .current-location{font-size:10px!important;margin:8px 0 5px!important}
+  .travel-row,
+  .planner.calendar-mode .travel-row{grid-template-columns:minmax(0,1fr) 72px 44px!important;gap:6px!important}
+  .break-row,
+  .planner.calendar-mode .break-row{grid-template-columns:88px minmax(0,1fr)!important;gap:6px!important}
+  .planner.calendar-mode .mini-btn{font-size:12px!important;padding:8px 9px!important}
+  .empty-note.compact,
+  .planner.calendar-mode .empty-note.compact{font-size:12px!important;padding:9px!important}
+
+  .unfinished-location-board{grid-template-columns:1fr!important}
+  #trackedTab.tab-panel.active{grid-template-columns:1fr!important}
+
+  .modal-root{padding:8px}
+  .modal{padding:14px;border-radius:16px;max-height:94vh}
+  .toast-root{left:8px;right:8px;bottom:8px}
+  .toast{max-width:none}
+}
+
+@media (max-width:420px){
+  .calendar-controls{grid-template-columns:minmax(0,1fr) 92px!important}
+  .calendar-controls .check-chip{padding:7px 8px}
+  .day-setup,.planner.calendar-mode .day-setup{grid-template-columns:minmax(0,1fr) 94px!important}
+  .assignment-row,.planner.calendar-mode .assignment-row{grid-template-columns:56px minmax(0,1fr)!important}
+  .assignment-time,.planner.calendar-mode .assignment-time{font-size:10px!important}
+}

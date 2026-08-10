@@ -60,6 +60,7 @@ function readPlannerNavState(){
 }
 function savePlannerNavState(){localStorage.setItem('campusCaresFloatingNavV3',JSON.stringify(plannerNavState))}
 function clearDockBody(){document.body.classList.remove('nav-docked-left','nav-docked-right','nav-docked-top')}
+function mobilePlannerLayout(){return window.matchMedia('(max-width: 760px)').matches}
 function applyDock(dock){
   const nav=els.plannerTabs;if(!nav)return;
   nav.classList.remove('dock-left','dock-right','dock-top','collapsed');clearDockBody();
@@ -72,6 +73,11 @@ function applyDock(dock){
 function restorePlannerNavState(){
   const nav=els.plannerTabs;if(!nav||els.plannerView.classList.contains('hidden'))return;
   readPlannerNavState();clearDockBody();nav.classList.remove('dock-left','dock-right','dock-top','collapsed');
+  if(mobilePlannerLayout()){
+    nav.style.left='';nav.style.top='';nav.style.right='';nav.style.bottom='';
+    els.navCollapseBtn.textContent='−';els.navUndockBtn?.classList.add('hidden');
+    return;
+  }
   if(plannerNavState.dock){applyDock(plannerNavState.dock);return}
   nav.style.left=`${plannerNavState.left||14}px`;nav.style.top=`${plannerNavState.top||118}px`;nav.style.right='auto';nav.style.bottom='auto';
   nav.classList.toggle('collapsed',!!plannerNavState.collapsed);els.navCollapseBtn.textContent=plannerNavState.collapsed?'+':'−';els.navUndockBtn?.classList.add('hidden');
@@ -90,7 +96,7 @@ function setupFloatingNavigation(){
     dockPreview.innerHTML=dock?`<div class="dock-preview-label">Dock ${dock}</div>`:'';
   };
   const begin=e=>{
-    if(els.plannerView.classList.contains('hidden')||plannerNavState.dock)return;
+    if(els.plannerView.classList.contains('hidden')||plannerNavState.dock||mobilePlannerLayout())return;
     const target=e.target;
     const allowed=target===els.navDragHandle||els.plannerTabs.classList.contains('collapsed');
     if(!allowed)return;
@@ -123,6 +129,7 @@ function setupFloatingNavigation(){
   els.navUndockBtn.onclick=e=>{e.stopPropagation();applyDock(null);plannerNavState.left=14;plannerNavState.top=118;restorePlannerNavState();savePlannerNavState()};
 }
 setupFloatingNavigation();
+window.addEventListener('resize',()=>{if(!els.plannerView.classList.contains('hidden'))restorePlannerNavState()});
 function shareUrl(token){const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('share',token);return u.toString()}
 async function openBossLog(){const token=await createOrRefreshPublicReport();window.open(shareUrl(token),'_blank','noopener')}
 async function openShareReport(){const token=await createOrRefreshPublicReport(),url=shareUrl(token);const root=modal('Boss activity link',`<p>This read-only link shows daily task completion and tracked-task activity. It updates whenever you save changes.</p><div class="share-link-box"><input id="bossShareUrl" readonly value="${esc(url)}"><button id="copyBossShare" class="primary-btn">Copy link</button></div><p class="task-sub">Anyone with this link can view the report. They cannot edit your planner.</p>`,`<button id="disableBossShare" class="danger-btn">Disable link</button>`);root.querySelector('#copyBossShare').onclick=async()=>{await navigator.clipboard.writeText(url).catch(()=>{});root.querySelector('#bossShareUrl').select();toast('Boss link copied.','good')};root.querySelector('#disableBossShare').onclick=async()=>{if(!confirm('Disable this public report link?'))return;await disablePublicReport();closeModal();toast('Boss link disabled.','good')}}
@@ -231,7 +238,7 @@ function dayHtml(w,d,n,date){
 
 function segmentForIndex(items,index){let segment=0;for(let i=0;i<index;i++)if(items[i].type==='travel')segment++;return segment}
 function formatDuration(minutes){const h=Math.floor(minutes/60),m=minutes%60;if(!h)return `${m} min`;if(!m)return `${h} hr`;return `${h} hr ${m} min`}
-function assignmentHtml(a,start,w,d,segment){const time=`<div class="assignment-time">${start===null?'':displayTime(start)}</div>`;if(a.type==='travel'){const l=selectors.locationById(a.locationId);return `<div class="assignment-row travel-boundary" data-calendar-item="${a.id}" data-calendar-day="${w}_${d}" data-calendar-segment="${segment}">${time}<div class="assignment travel"><div class="assignment-main"><div class="assignment-name">Travel to ${esc(l?.name||'location')}</div><div class="assignment-meta">${a.travelMinutes||0} minutes</div></div><button class="icon-btn" data-rm="${a.id}">×</button></div></div>`}if(a.type==='break'){return `<div class="assignment-row calendar-draggable" draggable="true" data-calendar-item="${a.id}" data-calendar-day="${w}_${d}" data-calendar-segment="${segment}">${time}<div class="assignment break"><span class="drag-handle calendar-drag-handle" title="Drag to reorder">⋮⋮</span><div class="assignment-main"><div class="assignment-name">Lunch break</div><div class="assignment-meta">${a.breakMinutes||0} minutes</div></div><button class="icon-btn" data-rm="${a.id}">×</button></div></div>`}const t=selectors.taskById(a.taskId),l=selectors.locationById(a.locationId),subs=(a.subtaskIds||[]).map(id=>t?.subtasks?.find(x=>x.id===id)).filter(Boolean),eligibleSubs=t?selectors.eligibleSubtasks(t.id,a.locationId,a.weekIndex,a.id):[],canChooseSubs=subs.length>0||eligibleSubs.length>0,statusStyle=`--task-status:${l?.color||'#98a2b3'}`;return `<div class="assignment-row calendar-draggable" draggable="true" data-calendar-item="${a.id}" data-calendar-day="${w}_${d}" data-calendar-segment="${segment}">${time}<div class="assignment task-assignment" style="${statusStyle}"><span class="drag-handle calendar-drag-handle" title="Drag to reorder">⋮⋮</span><input type="checkbox" data-done="${a.id}" ${a.done?'checked':''}><div class="assignment-main assignment-edit-target" ${canChooseSubs?`data-edit-assignment-subs="${a.id}" title="Choose items" role="button" tabindex="0"`:''}><div class="assignment-name">${esc(t?.name||'Missing task')}</div>${subs.length?`<div class="calendar-subtask-status assigned">${(a.completedSubtaskIds||[]).length}/${subs.length} items complete</div><div class="calendar-subtask-checks">${subs.map(x=>`<label><input type="checkbox" data-done-subtask="${a.id}|${x.id}" ${(a.completedSubtaskIds||[]).includes(x.id)?'checked':''}><span>${esc(x.name)} (${selectors.subtaskMinutes(t,x,a.locationId)}m)</span></label>`).join('')}</div>`:eligibleSubs.length?`<div class="calendar-subtask-status unassigned">Select items</div>`:''}</div><button class="icon-btn" data-rm="${a.id}">×</button></div></div>`}
+function assignmentHtml(a,start,w,d,segment){const time=`<div class="assignment-time">${start===null?'':displayTime(start)}</div>`;if(a.type==='travel'){const l=selectors.locationById(a.locationId);return `<div class="assignment-row travel-boundary" data-calendar-item="${a.id}" data-calendar-day="${w}_${d}" data-calendar-segment="${segment}">${time}<div class="assignment travel"><div class="assignment-main"><div class="assignment-name">Travel to ${esc(l?.name||'location')}</div><div class="assignment-meta">${a.travelMinutes||0} minutes</div></div><button class="icon-btn" data-rm="${a.id}">×</button></div></div>`}if(a.type==='break'){return `<div class="assignment-row calendar-draggable" draggable="true" data-calendar-item="${a.id}" data-calendar-day="${w}_${d}" data-calendar-segment="${segment}">${time}<div class="assignment break"><span class="drag-handle calendar-drag-handle" title="Drag to reorder">⋮⋮</span><div class="assignment-main"><div class="assignment-name">Lunch break</div><div class="assignment-meta">${a.breakMinutes||0} minutes</div></div><button class="icon-btn" data-rm="${a.id}">×</button></div></div>`}const t=selectors.taskById(a.taskId),l=selectors.locationById(a.locationId),subs=(a.subtaskIds||[]).map(id=>t?.subtasks?.find(x=>x.id===id)).filter(Boolean),eligibleSubs=t?selectors.eligibleSubtasks(t.id,a.locationId,a.weekIndex,a.id):[],canChooseSubs=subs.length>0||eligibleSubs.length>0,statusStyle=`--task-status:${l?.color||'#98a2b3'}`;return `<div class="assignment-row calendar-draggable ${a.done?'is-complete':''}" draggable="true" data-calendar-item="${a.id}" data-calendar-day="${w}_${d}" data-calendar-segment="${segment}">${time}<div class="assignment task-assignment ${a.done?'is-complete':''}" style="${statusStyle}"><span class="drag-handle calendar-drag-handle" title="Drag to reorder">⋮⋮</span><input type="checkbox" data-done="${a.id}" ${a.done?'checked':''}><div class="assignment-main assignment-edit-target" ${canChooseSubs?`data-edit-assignment-subs="${a.id}" title="Choose items" role="button" tabindex="0"`:''}><div class="assignment-name">${esc(t?.name||'Missing task')}</div>${subs.length?`<div class="calendar-subtask-status assigned">${(a.completedSubtaskIds||[]).length}/${subs.length} items complete</div><div class="calendar-subtask-checks">${subs.map(x=>`<label><input type="checkbox" data-done-subtask="${a.id}|${x.id}" ${(a.completedSubtaskIds||[]).includes(x.id)?'checked':''}><span>${esc(x.name)} (${selectors.subtaskMinutes(t,x,a.locationId)}m)</span></label>`).join('')}</div>`:eligibleSubs.length?`<div class="calendar-subtask-status unassigned">Select items</div>`:''}</div><button class="icon-btn" data-rm="${a.id}">×</button></div></div>`}
 function bindCalendar(){
   if(activeLocationId==='all')bindCalendarDrag();
   document.querySelectorAll('[data-day-loc]').forEach(x=>{x.onchange=async()=>{const [w,d]=x.dataset.dayLoc.split('_').map(Number);await actions.setDaySetting(w,d,{locationId:x.value});renderCalendar()}});
@@ -263,7 +270,35 @@ function openAssignmentSubtaskPicker(assignmentId){
   root.querySelector('#saveAssignmentSubtasks').onclick=async()=>{const ids=[...root.querySelectorAll('[data-choose-subtask]:checked')].map(x=>x.value);root.querySelector('#saveAssignmentSubtasks').disabled=true;try{await actions.updateAssignmentSubtasks(a.id,ids);closeModal();renderCalendar()}catch(e){root.querySelector('#saveAssignmentSubtasks').disabled=false}};
 }
 function renderLocations(){const r=$('locationsTab');r.innerHTML=`<div class="section-card"><h2>Locations</h2><form id="locForm" class="button-row"><input id="locName" placeholder="Location name"><input id="locColor" type="color" value="#2563eb"><button class="primary-btn">Add</button></form></div><div class="section-card"><div class="loc-list">${visibleLocations().map(l=>`<div class="loc-card"><div class="location-title"><input class="location-color-picker" type="color" value="${esc(l.color)}" data-loc-color="${l.id}" title="Choose calendar color"><span>${esc(l.name)}</span></div>${progress(l)}<div class="detail-actions"><button class="mini-btn" data-loc-edit="${l.id}">Rename</button><button class="danger-btn" data-loc-del="${l.id}">Archive</button></div></div>`).join('')}</div></div>`;$('locForm').onsubmit=async e=>{e.preventDefault();await actions.createLocation($('locName').value,$('locColor').value)};document.querySelectorAll('[data-loc-color]').forEach(x=>x.onchange=()=>actions.updateLocation(x.dataset.locColor,{color:x.value}));document.querySelectorAll('[data-loc-edit]').forEach(b=>b.onclick=async()=>{const l=selectors.locationById(b.dataset.locEdit),name=prompt('Location name',l.name);if(name)await actions.updateLocation(l.id,{name})});document.querySelectorAll('[data-loc-del]').forEach(b=>b.onclick=()=>confirm('Archive this location?')&&actions.deleteLocation(b.dataset.locDel))}
-function renderUnfinished(){const r=$('unfinishedTab'),today=new Date();today.setHours(0,0,0,0);const start=new Date((store.data.meta.startMondayISO||isoDate(mondayOf(new Date())))+'T00:00:00');const items=selectors.assignments().filter(a=>a.type==='task'&&locationVisible(a.locationId)&&addDays(start,a.weekIndex*7+a.dayIndex)<today).map(a=>{const t=selectors.taskById(a.taskId),all=(a.subtaskIds||[]),missed=all.filter(id=>!(a.completedSubtaskIds||[]).includes(id));return{a,t,missed}}).filter(x=>x.a.done===false&&(x.missed.length||!(x.a.subtaskIds||[]).length));r.innerHTML=`<div class="section-card"><h2>Unfinished tasks</h2><p class="task-sub">Only unfinished portions of past scheduled work are shown.</p>${items.map(({a,t,missed})=>{const l=selectors.locationById(a.locationId),date=isoDate(addDays(start,a.weekIndex*7+a.dayIndex));return `<div class="progress-row"><div><b>${esc(t?.name||'Missing task')}</b><div class="task-sub">${esc(l?.name||'')} • ${prettyDate(date)}</div>${missed.length?`<div class="unfinished-subtasks">Missing: ${missed.map(id=>esc(t?.subtasks?.find(s=>s.id===id)?.name||'Subtask')).join(' • ')}</div>`:''}</div><button class="mini-btn" data-finish="${a.id}">Mark all done</button></div>`}).join('')||'<div class="empty-note">Nothing unfinished.</div>'}</div>`;document.querySelectorAll('[data-finish]').forEach(b=>b.onclick=async()=>{await actions.toggleAssignment(b.dataset.finish,true);renderUnfinished()})}
+function renderUnfinished(){
+  const r=$('unfinishedTab'),today=new Date();today.setHours(0,0,0,0);
+  const start=new Date((store.data.meta.startMondayISO||isoDate(mondayOf(new Date())))+'T00:00:00');
+  const rows=[];
+  selectors.assignments().filter(a=>a.type==='task'&&locationVisible(a.locationId)).forEach(a=>{
+    const scheduled=addDays(start,a.weekIndex*7+a.dayIndex);scheduled.setHours(0,0,0,0);
+    if(scheduled>=today||a.done)return;
+    const t=selectors.taskById(a.taskId);if(!t)return;
+    const selected=(a.subtaskIds||[]),completed=new Set(a.completedSubtaskIds||[]);
+    if(selected.length){
+      const missed=selected.map(id=>t.subtasks?.find(s=>s.id===id&&!s.archived)).filter(Boolean).filter(sub=>!completed.has(sub.id)).filter(sub=>{
+        const isMonthly=sub.cadence==='monthly';
+        const onceWeekly=!isMonthly&&Math.max(1,+sub.weeklyTarget||1)===1;
+        if(!isMonthly&&!onceWeekly)return false;
+        const expires=addDays(scheduled,isMonthly?28:7);expires.setHours(0,0,0,0);
+        return today<expires;
+      });
+      if(missed.length)rows.push({a,t,missed});
+      return;
+    }
+    if(Math.max(1,+t.weeklyTarget||1)!==1)return;
+    const expires=addDays(scheduled,7);expires.setHours(0,0,0,0);
+    if(today<expires)rows.push({a,t,missed:[]});
+  });
+  const columns=visibleLocations().map(l=>({l,items:rows.filter(x=>x.a.locationId===l.id)})).filter(x=>x.items.length);
+  r.innerHTML=`<div class="section-card"><h2>Unfinished tasks</h2><p class="task-sub">Only once-weekly or monthly work carries forward. Weekly items drop off when their next weekly occurrence arrives; higher-frequency tasks are left for their next scheduled time.</p>${columns.length?`<div class="unfinished-location-board">${columns.map(({l,items})=>`<section class="unfinished-location-column"><div class="unfinished-location-head"><span class="color-dot" style="background:${l.color}"></span><b>${esc(l.name)}</b><span>${items.length}</span></div>${items.map(({a,t,missed})=>{const date=isoDate(addDays(start,a.weekIndex*7+a.dayIndex));return `<div class="progress-row unfinished-row"><div><b>${esc(t?.name||'Missing task')}</b><div class="task-sub">Scheduled ${prettyDate(date)}</div>${missed.length?`<div class="unfinished-subtasks">Missing: ${missed.map(sub=>esc(sub.name)).join(' • ')}</div>`:''}</div><button class="mini-btn" data-finish="${a.id}" data-finish-subs="${missed.map(sub=>sub.id).join(',')}">Mark done</button></div>`}).join('')}</section>`).join('')}</div>`:'<div class="empty-note">Nothing unfinished.</div>'}</div>`;
+  document.querySelectorAll('[data-finish]').forEach(b=>b.onclick=async()=>{const ids=(b.dataset.finishSubs||'').split(',').filter(Boolean);if(ids.length){for(const sid of ids)await actions.toggleAssignmentSubtask(b.dataset.finish,sid,true)}else await actions.toggleAssignment(b.dataset.finish,true);renderUnfinished()})
+}
+
 let trackedExpandedGroup='';
 const trackedExpandedLocations=new Map();
 let trackedExpandedItem='';
