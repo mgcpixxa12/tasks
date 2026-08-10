@@ -413,3 +413,31 @@ body.planner-workspace.nav-docked-top .app-shell{padding-top:76px}
 
 /* Keep subtask checkboxes independent from the assignment item picker. */
 .assignment-edit-target[role="button"]{cursor:pointer}.calendar-subtask-checks label,.calendar-subtask-checks input{cursor:pointer}
+
+/* 2026-08-10 completion visibility, unfinished cadence, and tracked full-width expansion */
+.task-assignment.is-complete{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--task-status,#22c55e) 10%,#f8fafc),#f8fafc 72%);
+  border-color:color-mix(in srgb,var(--task-status,#22c55e) 38%,#d0d5dd);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--task-status,#22c55e) 10%,transparent);
+  opacity:.76;
+}
+.task-assignment.is-complete .assignment-name{text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:#94a3b8;color:#64748b}
+.task-assignment.is-complete .calendar-subtask-status{opacity:.72}
+.assignment-row.is-complete .assignment-time{color:#94a3b8}
+
+.unfinished-location-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;align-items:start;margin-top:14px}
+.unfinished-location-column{border:1px solid var(--line);border-radius:16px;background:#f8fafc;padding:10px;min-width:0}
+.unfinished-location-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;padding:4px 3px 9px}
+.unfinished-location-head>span:last-child{display:grid;place-items:center;min-width:25px;height:25px;padding:0 7px;border-radius:999px;background:#e2e8f0;color:#475569;font-size:11px;font-weight:900}
+.unfinished-row{margin:7px 0;background:#fff}
+
+#trackedTab.tab-panel.active{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
+#trackedTab>.compact-section-head{order:0}
+#trackedTab>.tracked-group{order:1;margin:0!important;min-width:0}
+#trackedTab>.tracked-group:not(.open) .tracked-group-head{min-height:72px;border-radius:14px;background:#fff!important;border:1px solid #d0d5dd!important;padding:11px 13px}
+#trackedTab>.tracked-group:not(.open) .tracked-group-head:hover{background:#f8fafc!important;border-color:#94a3b8!important}
+#trackedTab>.tracked-group:not(.open) .tracked-group-head small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#trackedTab>.tracked-group.open{grid-column:1/-1;order:2;width:100%}
+#trackedTab>.tracked-group.open .tracked-group-body{width:100%}
+@media(max-width:1050px){#trackedTab.tab-panel.active{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){#trackedTab.tab-panel.active{grid-template-columns:1fr}.unfinished-location-board{grid-template-columns:1fr}}
