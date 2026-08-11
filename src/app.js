@@ -287,16 +287,25 @@ function renderUnfinished(){
         const expires=addDays(scheduled,isMonthly?28:7);expires.setHours(0,0,0,0);
         return today<expires;
       });
-      if(missed.length)rows.push({a,t,missed});
+      if(missed.length)rows.push({a,t,missed,scheduled});
       return;
     }
     if(Math.max(1,+t.weeklyTarget||1)!==1)return;
     const expires=addDays(scheduled,7);expires.setHours(0,0,0,0);
-    if(today<expires)rows.push({a,t,missed:[]});
+    if(today<expires)rows.push({a,t,missed:[],scheduled});
   });
-  const columns=visibleLocations().map(l=>({l,items:rows.filter(x=>x.a.locationId===l.id)})).filter(x=>x.items.length);
-  r.innerHTML=`<div class="section-card"><h2>Unfinished tasks</h2><p class="task-sub">Only once-weekly or monthly work carries forward. Weekly items drop off when their next weekly occurrence arrives; higher-frequency tasks are left for their next scheduled time.</p>${columns.length?`<div class="unfinished-location-board">${columns.map(({l,items})=>`<section class="unfinished-location-column"><div class="unfinished-location-head"><span class="color-dot" style="background:${l.color}"></span><b>${esc(l.name)}</b><span>${items.length}</span></div>${items.map(({a,t,missed})=>{const date=isoDate(addDays(start,a.weekIndex*7+a.dayIndex));return `<div class="progress-row unfinished-row"><div><b>${esc(t?.name||'Missing task')}</b><div class="task-sub">Scheduled ${prettyDate(date)}</div>${missed.length?`<div class="unfinished-subtasks">Missing: ${missed.map(sub=>esc(sub.name)).join(' • ')}</div>`:''}</div><button class="mini-btn" data-finish="${a.id}" data-finish-subs="${missed.map(sub=>sub.id).join(',')}">Mark done</button></div>`}).join('')}</section>`).join('')}</div>`:'<div class="empty-note">Nothing unfinished.</div>'}</div>`;
-  document.querySelectorAll('[data-finish]').forEach(b=>b.onclick=async()=>{const ids=(b.dataset.finishSubs||'').split(',').filter(Boolean);if(ids.length){for(const sid of ids)await actions.toggleAssignmentSubtask(b.dataset.finish,sid,true)}else await actions.toggleAssignment(b.dataset.finish,true);renderUnfinished()})
+  const grouped=new Map();
+  rows.forEach(row=>{
+    const key=`${row.a.locationId}|${row.t.id}`;
+    if(!grouped.has(key))grouped.set(key,{key,locationId:row.a.locationId,t:row.t,occurrences:[],missed:new Map()});
+    const g=grouped.get(key);g.occurrences.push(row);
+    row.missed.forEach(sub=>{const item=g.missed.get(sub.id)||{sub,count:0};item.count++;g.missed.set(sub.id,item)});
+  });
+  const columns=visibleLocations().map(l=>({l,items:[...grouped.values()].filter(x=>x.locationId===l.id)})).filter(x=>x.items.length);
+  const totalMisses=g=>g.occurrences.reduce((sum,row)=>sum+(row.missed.length||1),0);
+  r.innerHTML=`<div class="section-card"><h2>Unfinished tasks</h2><p class="task-sub">Only once-weekly or monthly work carries forward. Repeated misses of the same task are combined here, while each missed subtask can still be completed individually.</p>${columns.length?`<div class="unfinished-location-board">${columns.map(({l,items})=>`<section class="unfinished-location-column"><div class="unfinished-location-head"><span class="color-dot" style="background:${l.color}"></span><b>${esc(l.name)}</b><span>${items.length}</span></div>${items.map(g=>{const dates=g.occurrences.map(x=>prettyDate(isoDate(x.scheduled))),individualMisses=g.occurrences.flatMap(row=>row.missed.map(sub=>({row,sub,date:prettyDate(isoDate(row.scheduled))})));return `<div class="progress-row unfinished-row"><div class="unfinished-row-main"><b>${esc(g.t?.name||'Missing task')}</b><div class="task-sub">${g.occurrences.length>1?`${g.occurrences.length} missed days: ${dates.join(' • ')}`:`Scheduled ${dates[0]}`}</div>${individualMisses.length?`<div class="unfinished-subtasks">${individualMisses.map(({row,sub,date})=>`<button type="button" class="unfinished-subtask-btn" data-finish-subtask="${row.a.id}|${sub.id}" title="Mark ${esc(sub.name)} complete for ${esc(date)}"><span class="unfinished-subtask-check">✓</span><span>${esc(sub.name)}</span>${g.occurrences.length>1?`<small>${esc(date)}</small>`:''}</button>`).join('')}</div>`:''}</div><button class="mini-btn" data-finish-group="${esc(g.key)}">Mark done${totalMisses(g)>1?' all':''}</button></div>`}).join('')}</section>`).join('')}</div>`:'<div class="empty-note">Nothing unfinished.</div>'}</div>`;
+  document.querySelectorAll('[data-finish-subtask]').forEach(b=>b.onclick=async()=>{const [assignmentId,subtaskId]=b.dataset.finishSubtask.split('|');if(!assignmentId||!subtaskId)return;b.disabled=true;try{await actions.toggleAssignmentSubtask(assignmentId,subtaskId,true)}finally{renderUnfinished()}});
+  document.querySelectorAll('[data-finish-group]').forEach(b=>b.onclick=async()=>{const g=grouped.get(b.dataset.finishGroup);if(!g)return;b.disabled=true;try{for(const row of g.occurrences){if(row.missed.length){for(const sub of row.missed)await actions.toggleAssignmentSubtask(row.a.id,sub.id,true)}else await actions.toggleAssignment(row.a.id,true)}}finally{renderUnfinished()}})
 }
 
 let trackedExpandedGroup='';
