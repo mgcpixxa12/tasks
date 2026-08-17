@@ -1,4 +1,4 @@
-import { esc } from "./utils.js?v=20260721-github-cache-1";
+import { esc } from "./utils.js?v=20260817-ux-polish-3";
 
 export function toast(message, type=""){
   const root = document.getElementById("toastRoot");
@@ -21,7 +21,7 @@ export function setSync(status, text){
 export function modal(title, bodyHtml, actionsHtml=""){
   const root = document.getElementById("modalRoot");
   root.classList.remove("hidden");
-  root.innerHTML = `<div class="modal"><div class="modal-head"><div><h2>${esc(title)}</h2></div><button class="ghost-btn" data-close-modal type="button">Close</button></div><div>${bodyHtml}</div>${actionsHtml?`<div class="button-row wrap" style="margin-top:14px">${actionsHtml}</div>`:""}</div>`;
+  root.innerHTML = `<div class="modal"><div class="modal-head"><div><h2>${esc(title)}</h2></div><button class="modal-close" data-close-modal type="button" aria-label="Close" title="Close">×</button></div><div>${bodyHtml}</div>${actionsHtml?`<div class="button-row wrap" style="margin-top:14px">${actionsHtml}</div>`:""}</div>`;
   root.querySelectorAll("[data-close-modal]").forEach(b=>b.addEventListener("click", closeModal));
   root.addEventListener("click", ev => { if (ev.target === root) closeModal(); }, {once:true});
   return root;

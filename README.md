@@ -207,3 +207,12 @@ The report snapshot includes `ownerUid`, allowing the owner-only write rule abov
 - Linked tracked tasks automatically update their selected date fields when calendar work is completed. Edit a tracked item/group to select one or more date fields; when none are explicitly selected, the first date field is used.
 - Manual tracked tasks can create non-calendar tracked items by entering one item per line.
 - The planner button now opens the boss log; the share/copy control is on the boss-log page.
+
+## 2026-08-17 usability polish
+- Calendar is now the first and most prominent navigation destination.
+- Navigation is fixed and predictable instead of draggable/dockable.
+- Header utilities are grouped into a single More menu.
+- Task creation has a clearer two-step layout.
+- Subtasks use progressive disclosure: common settings are visible; location/timing overrides are advanced options.
+- Visual spacing, hierarchy, cards, buttons, modal controls, and responsive layout were polished for new users.
+- Existing task/subtask data fields and Firebase actions remain compatible.

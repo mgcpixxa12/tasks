@@ -8,9 +8,9 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>Campus Cares Planner</title>
-  <link rel="stylesheet" href="./styles.css?v=20260810-mobile-layout-1" />
+  <link rel="stylesheet" href="./styles.css?v=20260817-ux-polish-3" />
 </head>
-<body data-build="20260810-mobile-layout-1">
+<body data-build="20260817-ux-polish-3">
   <div id="appShell" class="app-shell">
     <header class="topbar">
       <div>
@@ -19,15 +19,24 @@
       </div>
       <div class="top-actions">
         <div id="syncPill" class="sync-pill loading"><span class="spinner"></span><span>Starting…</span></div>
-        <button id="printBtn" class="ghost-btn" type="button">Print</button>
-        <button id="resetDoneBtn" class="ghost-btn" type="button">Reset checks</button>
-        <button id="historyBtn" class="ghost-btn" type="button">History</button>
-        <button id="shareReportBtn" class="ghost-btn" type="button">Show Boss Log</button>
-        <button id="exportSessionBtn" class="ghost-btn" type="button">Export Session</button>
-        <button id="uploadSessionBtn" class="ghost-btn" type="button">Upload Session</button>
-        <input id="uploadSessionInput" class="hidden" type="file" accept="application/json,.json" />
+        <button id="shareReportBtn" class="ghost-btn header-primary-action hidden" type="button">Boss Log</button>
         <button id="profileNameBtn" class="ghost-btn hidden" type="button"></button>
-        <button id="signOutBtn" class="ghost-btn hidden" type="button">Sign out</button>
+        <details id="utilityMenu" class="utility-menu hidden">
+          <summary aria-label="More options" title="More options">•••</summary>
+          <div class="utility-menu-panel">
+            <div class="utility-menu-title">Planner options</div>
+            <button id="tutorialBtn" class="utility-action" type="button">Tutorial Mode</button>
+            <button id="historyBtn" class="utility-action" type="button">History</button>
+            <button id="printBtn" class="utility-action" type="button">Print calendar</button>
+            <button id="resetDoneBtn" class="utility-action" type="button">Reset all checkmarks</button>
+            <div class="utility-menu-divider"></div>
+            <button id="exportSessionBtn" class="utility-action" type="button">Export backup</button>
+            <button id="uploadSessionBtn" class="utility-action" type="button">Import backup</button>
+            <input id="uploadSessionInput" class="hidden" type="file" accept="application/json,.json" />
+            <div class="utility-menu-divider"></div>
+            <button id="signOutBtn" class="utility-action danger-text hidden" type="button">Sign out</button>
+          </div>
+        </details>
       </div>
     </header>
 
@@ -80,13 +89,14 @@
             <option value="all">All locations</option>
           </select>
         </label>
-        <button class="tab" data-tab="dashboard">Dashboard</button>
-        <button class="tab" data-tab="tasks">Tasks</button>
-        <button class="tab active" data-tab="calendar">Calendar</button>
-        <button class="tab" data-tab="locations">Locations</button>
-        <button class="tab" data-tab="unfinished">Unfinished</button>
-        <button class="tab" data-tab="tracked">Tracked Tasks</button>
-        <button class="tab" data-tab="issues">Documented Issues</button>
+        <button class="tab active" data-tab="calendar"><span class="nav-icon">▦</span><span>Calendar</span></button>
+        <button class="tab" data-tab="unfinished"><span class="nav-icon">!</span><span>Unfinished</span></button>
+        <button class="tab" data-tab="tasks"><span class="nav-icon">✓</span><span>Tasks</span></button>
+        <button class="tab" data-tab="tracked"><span class="nav-icon">↗</span><span>Tracked Tasks</span></button>
+        <button class="tab" data-tab="issues"><span class="nav-icon">⌁</span><span>Issues</span></button>
+        <div class="nav-divider"></div>
+        <button class="tab" data-tab="dashboard"><span class="nav-icon">◫</span><span>Overview</span></button>
+        <button class="tab" data-tab="locations"><span class="nav-icon">⌖</span><span>Locations</span></button>
       </nav>
 
       <section id="dashboardTab" class="tab-panel"></section>
@@ -102,6 +112,6 @@
   <div id="modalRoot" class="modal-root hidden"></div>
   <div id="toastRoot" class="toast-root"></div>
 
-  <script type="module" src="./src/app.js?v=20260810-mobile-layout-1"></script>
+  <script type="module" src="./src/app.js?v=20260817-ux-polish-3"></script>
 </body>
 </html>
